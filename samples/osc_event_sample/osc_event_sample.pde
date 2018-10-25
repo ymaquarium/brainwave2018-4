@@ -11,11 +11,7 @@ OscP5 oscP5 = new OscP5(this, PORT);
 boolean flag = false;
 
 void setup() {
-<<<<<<< Updated upstream
   file = createWriter(args[0] + ".csv");
-=======
-  file = createWriter("test.csv");
->>>>>>> Stashed changes
   minim = new Minim(this);
   String[] musics = {"fantastic_baby", "rock_ballad_of_singer", "senbonzakura"};
   int[] start_times = {35200, 86000, 57300};
@@ -50,11 +46,29 @@ void stop(){
 }
 
 void oscEvent(OscMessage msg) {
+  boolean[] is_good = {false, false, false, false};
+  
+  if (msg.checkAddrPattern("/muse/elements/is_good")) {
+    for (int i = 0; i < 4; i++) {
+      if (msg.get(i).intValue() == 1) {
+        is_good[i] = true;
+      }
+    }
+  }
+  
   if (flag == true && msg.checkAddrPattern("/muse/elements/alpha_relative")) {
     float alpha_value_sum = 0;
+    int count = 0;
+    
     for (int i = 0; i < 4; i++) {
-      alpha_value_sum += msg.get(i).floatValue();
+      if (is_good[i] == true) {
+        alpha_value_sum += msg.get(i).floatValue();
+        count++;
+      }
     }
+    
+    if (count > 0) alpha_value_sum/= count;
+    
     file.print(alpha_value_sum);
     file.print("\n");
   }
